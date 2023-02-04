@@ -2,10 +2,11 @@ import os, sys
 import numpy as np
 import csv 
 import pickle
+from scipy.stats import beta
 
 data_file = "EURUSD_H1.csv"
 data_index = 4 
-vocab_size = 50257
+vocab_size = 250
 data = []
 # Import Forex Data from CSV
 input_file_path = os.path.join(os.path.dirname(__file__), data_file)
@@ -24,17 +25,24 @@ with open(input_file_path, 'r') as f:
             data.append(float(row[4]) - float(previous_price)) 
             previous_price = float(row[4])
 
+def denseboundspace(size=30, start=0, end=9, alpha=.5):
+    x = np.linspace(0, 1, size)
+    return start + beta.isf(x, 2.+alpha, 2.+alpha) * (end-start)
+
 n = len(data)
 
 data_min = min(data)
 data_max = max(data)
 
+bins = denseboundspace(vocab_size, data_min, data_max, 0.01)
+
+std_d = np.std(data)
+
 print(f"data has minimum change of = {data_min:,}")
 print(f"data has max change of {data_max:,}")
-
-steps = (data_max - data_min) / vocab_size
-bins = np.arange(data_min, data_max, steps) 
+ 
 data = np.digitize(data, bins)
+x = np.tan(bins)
 
 train_data = data[:int(n*0.9)]
 val_data = data[int(n*0.9):]
