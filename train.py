@@ -51,6 +51,8 @@ dataset = 'forex'
 gradient_accumulation_steps = 1 # used to simulate larger batch sizes
 batch_size = 12 # if gradient_accumulation_steps > 1, this is the micro-batch size
 block_size = 1024
+output_crop = None
+
 # model
 n_layer = 12
 n_head = 12
@@ -134,7 +136,7 @@ else:
     vocab_size = 50257
 
 # model init
-model_args = dict(n_layer=n_layer, n_head=n_head, n_embd=n_embd, block_size=block_size,
+model_args = dict(n_layer=n_layer, n_head=n_head, n_embd=n_embd, block_size=block_size, output_crop=output_crop,
                   dropout=dropout, vocab_size=vocab_size, bias=bias)
 if init_from == 'scratch':
     # init a new model from scratch
