@@ -1,0 +1,15 @@
+# email: rbelshaw@sagarobotics.com
+# Need to docker login
+version: '2.4'
+services:
+    nanogpt:
+        image: nanogpt:latest
+        build: .
+        network_mode: host
+        runtime: nvidia
+        restart: on-failure:2 
+        privileged: true
+        entrypoint: /bin/bash ./entrypoint.sh
+        volumes:
+            - ./entrypoint.sh:/entrypoint.sh
+            - ../:/nanogpt
