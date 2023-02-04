@@ -1,0 +1,2 @@
+
+# Forex Trading Generative Transformer
