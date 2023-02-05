@@ -44,7 +44,7 @@ def get_batch(split):
     data = train_data if split == 'train' else val_data
     ix = torch.randint(len(data) - block_size, (batch_size,))
     x = torch.stack([torch.from_numpy((data[i:i+block_size]).astype(np.int64)) for i in ix])
-    y = torch.stack([torch.from_numpy((data[i+1:i+1+block_size]).astype(np.int64)) for i in ix])
+    y = torch.stack([torch.from_numpy((data[i+block_size:i+block_size+block_size]).astype(np.int64)) for i in ix])
     # pin arrays x,y, which allows us to move them to GPU asynchronously (non_blocking=True)
     x, y = x.pin_memory().to(device, non_blocking=True), y.pin_memory().to(device, non_blocking=True)
     return x, y
@@ -114,14 +114,26 @@ with torch.no_grad():
         for k in range(num_samples):
             X, Y = get_batch('val')
             y = model.generate(X, max_new_tokens, temperature=temperature, top_k=top_k)
-            pred = y.cpu().numpy()[1]
-            gt = Y.cpu().numpy()[1]
-            pred = pred[:len(gt)]
+            pred = y.cpu().numpy().flatten()
+            pred = pred[block_size:]
+            gt = Y.cpu().numpy().flatten()[:len(pred)]
 
-            x_axis = np.arange(0, len(gt))
+            x_axis = np.arange(0, gt.size)
+            # y_offet = np.full((gt.size), 200)
 
-            plt.plot(x_axis, pred)
-            plt.plot(x_axis, gt)
+            #pred = np.add(pred, y_offet)
+
+            diff = np.subtract(gt, pred)
+
+            plt.plot(x_axis, pred, color="r")
+            plt.plot(x_axis, gt, color="g")
+            plt.plot(x_axis, diff, color="b")
+
+            for p, g in zip(pred, gt):
+                print("GT: %i" % g)
+                print("PRED: %i" % p)
+                print("-------")
+
             plt.xlabel('Delta T (1 Hour)')
             plt.ylabel('Delta $')
             plt.show()
